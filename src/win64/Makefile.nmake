@@ -1,0 +1,19 @@
+all: coro.lib
+
+coro.lib: coro.obj coroasm.obj
+	lib /OUT:$@ $**
+
+coro.obj: coro.c ..\..\include\coro.h
+	cl /nologo /O2 /I. /I..\..\include /DCORO_ABI=CORO_WIN64 /Za /c /TC /Fo$@ coro.c
+
+coroasm.asm: coroasm.asm.in ..\..\include\coro.h
+	cl /nologo /EP /I. /I..\..\include /DCORO_ABI=CORO_WIN64 /DCORO_ASM_COMPILE coroasm.asm.in > $@
+
+coroasm.obj: coroasm.asm
+	nasm -f win64 -o $@ coroasm.asm
+
+clean:
+	del coro.lib
+	del coro.obj
+	del coroasm.asm
+	del coroasm.obj

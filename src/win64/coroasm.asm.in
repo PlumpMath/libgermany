@@ -1,0 +1,1054 @@
+#include "coro.h"
+
+#define OFFSET_RSP     0
+#define OFFSET_STATE   8
+
+#ifdef CORO_DEBUG_STACK
+#define OFFSET_STKBOT 16
+#endif
+
+global coro_chain_f32
+global coro_chain_f64
+global coro_chain_i16
+global coro_chain_i32
+global coro_chain_i64
+global coro_chain_i8
+global coro_chain_p
+global coro_chain_u16
+global coro_chain_u32
+global coro_chain_u64
+global coro_chain_u8
+global coro_chain_v
+global coro_kill_f32
+global coro_kill_f64
+global coro_kill_i16
+global coro_kill_i32
+global coro_kill_i64
+global coro_kill_i8
+global coro_kill_p
+global coro_kill_u16
+global coro_kill_u32
+global coro_kill_u64
+global coro_kill_u8
+global coro_kill_v
+global coro_resume_f32_f32
+global coro_resume_f32_f64
+global coro_resume_f32_i16
+global coro_resume_f32_i32
+global coro_resume_f32_i64
+global coro_resume_f32_i8
+global coro_resume_f32_p
+global coro_resume_f32_u16
+global coro_resume_f32_u32
+global coro_resume_f32_u64
+global coro_resume_f32_u8
+global coro_resume_f32_v
+global coro_resume_f64_f32
+global coro_resume_f64_f64
+global coro_resume_f64_i16
+global coro_resume_f64_i32
+global coro_resume_f64_i64
+global coro_resume_f64_i8
+global coro_resume_f64_p
+global coro_resume_f64_u16
+global coro_resume_f64_u32
+global coro_resume_f64_u64
+global coro_resume_f64_u8
+global coro_resume_f64_v
+global coro_resume_i16_f32
+global coro_resume_i16_f64
+global coro_resume_i16_i16
+global coro_resume_i16_i32
+global coro_resume_i16_i64
+global coro_resume_i16_i8
+global coro_resume_i16_p
+global coro_resume_i16_u16
+global coro_resume_i16_u32
+global coro_resume_i16_u64
+global coro_resume_i16_u8
+global coro_resume_i16_v
+global coro_resume_i32_f32
+global coro_resume_i32_f64
+global coro_resume_i32_i16
+global coro_resume_i32_i32
+global coro_resume_i32_i64
+global coro_resume_i32_i8
+global coro_resume_i32_p
+global coro_resume_i32_u16
+global coro_resume_i32_u32
+global coro_resume_i32_u64
+global coro_resume_i32_u8
+global coro_resume_i32_v
+global coro_resume_i64_f32
+global coro_resume_i64_f64
+global coro_resume_i64_i16
+global coro_resume_i64_i32
+global coro_resume_i64_i64
+global coro_resume_i64_i8
+global coro_resume_i64_p
+global coro_resume_i64_u16
+global coro_resume_i64_u32
+global coro_resume_i64_u64
+global coro_resume_i64_u8
+global coro_resume_i64_v
+global coro_resume_i8_f32
+global coro_resume_i8_f64
+global coro_resume_i8_i16
+global coro_resume_i8_i32
+global coro_resume_i8_i64
+global coro_resume_i8_i8
+global coro_resume_i8_p
+global coro_resume_i8_u16
+global coro_resume_i8_u32
+global coro_resume_i8_u64
+global coro_resume_i8_u8
+global coro_resume_i8_v
+global coro_resume_p_f32
+global coro_resume_p_f64
+global coro_resume_p_i16
+global coro_resume_p_i32
+global coro_resume_p_i64
+global coro_resume_p_i8
+global coro_resume_p_p
+global coro_resume_p_u16
+global coro_resume_p_u32
+global coro_resume_p_u64
+global coro_resume_p_u8
+global coro_resume_p_v
+global coro_resume_u16_f32
+global coro_resume_u16_f64
+global coro_resume_u16_i16
+global coro_resume_u16_i32
+global coro_resume_u16_i64
+global coro_resume_u16_i8
+global coro_resume_u16_p
+global coro_resume_u16_u16
+global coro_resume_u16_u32
+global coro_resume_u16_u64
+global coro_resume_u16_u8
+global coro_resume_u16_v
+global coro_resume_u32_f32
+global coro_resume_u32_f64
+global coro_resume_u32_i16
+global coro_resume_u32_i32
+global coro_resume_u32_i64
+global coro_resume_u32_i8
+global coro_resume_u32_p
+global coro_resume_u32_u16
+global coro_resume_u32_u32
+global coro_resume_u32_u64
+global coro_resume_u32_u8
+global coro_resume_u32_v
+global coro_resume_u64_f32
+global coro_resume_u64_f64
+global coro_resume_u64_i16
+global coro_resume_u64_i32
+global coro_resume_u64_i64
+global coro_resume_u64_i8
+global coro_resume_u64_p
+global coro_resume_u64_u16
+global coro_resume_u64_u32
+global coro_resume_u64_u64
+global coro_resume_u64_u8
+global coro_resume_u64_v
+global coro_resume_u8_f32
+global coro_resume_u8_f64
+global coro_resume_u8_i16
+global coro_resume_u8_i32
+global coro_resume_u8_i64
+global coro_resume_u8_i8
+global coro_resume_u8_p
+global coro_resume_u8_u16
+global coro_resume_u8_u32
+global coro_resume_u8_u64
+global coro_resume_u8_u8
+global coro_resume_u8_v
+global coro_resume_v_f32
+global coro_resume_v_f64
+global coro_resume_v_i16
+global coro_resume_v_i32
+global coro_resume_v_i64
+global coro_resume_v_i8
+global coro_resume_v_p
+global coro_resume_v_u16
+global coro_resume_v_u32
+global coro_resume_v_u64
+global coro_resume_v_u8
+global coro_resume_v_v
+global coro_run_on_caller_f32
+global coro_run_on_caller_f64
+global coro_run_on_caller_i16
+global coro_run_on_caller_i32
+global coro_run_on_caller_i64
+global coro_run_on_caller_i8
+global coro_run_on_caller_p
+global coro_run_on_caller_u16
+global coro_run_on_caller_u32
+global coro_run_on_caller_u64
+global coro_run_on_caller_u8
+global coro_run_on_caller_v
+global coro_suicide_f32
+global coro_suicide_f64
+global coro_suicide_i16
+global coro_suicide_i32
+global coro_suicide_i64
+global coro_suicide_i8
+global coro_suicide_p
+global coro_suicide_u16
+global coro_suicide_u32
+global coro_suicide_u64
+global coro_suicide_u8
+global coro_suicide_v
+global coro_yield_f32_f32
+global coro_yield_f32_f64
+global coro_yield_f32_i16
+global coro_yield_f32_i32
+global coro_yield_f32_i64
+global coro_yield_f32_i8
+global coro_yield_f32_p
+global coro_yield_f32_u16
+global coro_yield_f32_u32
+global coro_yield_f32_u64
+global coro_yield_f32_u8
+global coro_yield_f32_v
+global coro_yield_f64_f32
+global coro_yield_f64_f64
+global coro_yield_f64_i16
+global coro_yield_f64_i32
+global coro_yield_f64_i64
+global coro_yield_f64_i8
+global coro_yield_f64_p
+global coro_yield_f64_u16
+global coro_yield_f64_u32
+global coro_yield_f64_u64
+global coro_yield_f64_u8
+global coro_yield_f64_v
+global coro_yield_i16_f32
+global coro_yield_i16_f64
+global coro_yield_i16_i16
+global coro_yield_i16_i32
+global coro_yield_i16_i64
+global coro_yield_i16_i8
+global coro_yield_i16_p
+global coro_yield_i16_u16
+global coro_yield_i16_u32
+global coro_yield_i16_u64
+global coro_yield_i16_u8
+global coro_yield_i16_v
+global coro_yield_i32_f32
+global coro_yield_i32_f64
+global coro_yield_i32_i16
+global coro_yield_i32_i32
+global coro_yield_i32_i64
+global coro_yield_i32_i8
+global coro_yield_i32_p
+global coro_yield_i32_u16
+global coro_yield_i32_u32
+global coro_yield_i32_u64
+global coro_yield_i32_u8
+global coro_yield_i32_v
+global coro_yield_i64_f32
+global coro_yield_i64_f64
+global coro_yield_i64_i16
+global coro_yield_i64_i32
+global coro_yield_i64_i64
+global coro_yield_i64_i8
+global coro_yield_i64_p
+global coro_yield_i64_u16
+global coro_yield_i64_u32
+global coro_yield_i64_u64
+global coro_yield_i64_u8
+global coro_yield_i64_v
+global coro_yield_i8_f32
+global coro_yield_i8_f64
+global coro_yield_i8_i16
+global coro_yield_i8_i32
+global coro_yield_i8_i64
+global coro_yield_i8_i8
+global coro_yield_i8_p
+global coro_yield_i8_u16
+global coro_yield_i8_u32
+global coro_yield_i8_u64
+global coro_yield_i8_u8
+global coro_yield_i8_v
+global coro_yield_p_f32
+global coro_yield_p_f64
+global coro_yield_p_i16
+global coro_yield_p_i32
+global coro_yield_p_i64
+global coro_yield_p_i8
+global coro_yield_p_p
+global coro_yield_p_u16
+global coro_yield_p_u32
+global coro_yield_p_u64
+global coro_yield_p_u8
+global coro_yield_p_v
+global coro_yield_u16_f32
+global coro_yield_u16_f64
+global coro_yield_u16_i16
+global coro_yield_u16_i32
+global coro_yield_u16_i64
+global coro_yield_u16_i8
+global coro_yield_u16_p
+global coro_yield_u16_u16
+global coro_yield_u16_u32
+global coro_yield_u16_u64
+global coro_yield_u16_u8
+global coro_yield_u16_v
+global coro_yield_u32_f32
+global coro_yield_u32_f64
+global coro_yield_u32_i16
+global coro_yield_u32_i32
+global coro_yield_u32_i64
+global coro_yield_u32_i8
+global coro_yield_u32_p
+global coro_yield_u32_u16
+global coro_yield_u32_u32
+global coro_yield_u32_u64
+global coro_yield_u32_u8
+global coro_yield_u32_v
+global coro_yield_u64_f32
+global coro_yield_u64_f64
+global coro_yield_u64_i16
+global coro_yield_u64_i32
+global coro_yield_u64_i64
+global coro_yield_u64_i8
+global coro_yield_u64_p
+global coro_yield_u64_u16
+global coro_yield_u64_u32
+global coro_yield_u64_u64
+global coro_yield_u64_u8
+global coro_yield_u64_v
+global coro_yield_u8_f32
+global coro_yield_u8_f64
+global coro_yield_u8_i16
+global coro_yield_u8_i32
+global coro_yield_u8_i64
+global coro_yield_u8_i8
+global coro_yield_u8_p
+global coro_yield_u8_u16
+global coro_yield_u8_u32
+global coro_yield_u8_u64
+global coro_yield_u8_u8
+global coro_yield_u8_v
+global coro_yield_v_f32
+global coro_yield_v_f64
+global coro_yield_v_i16
+global coro_yield_v_i32
+global coro_yield_v_i64
+global coro_yield_v_i8
+global coro_yield_v_p
+global coro_yield_v_u16
+global coro_yield_v_u32
+global coro_yield_v_u64
+global coro_yield_v_u8
+global coro_yield_v_v
+
+global coro_start
+global coro_return
+
+#ifdef CORO_THREADED
+extern coro_get_tls
+#endif
+
+#ifdef CORO_DEBUG_STACK
+extern coro_stack_error
+#endif
+
+; Adjust the stack and save all non-volatile registers.
+%macro SAVE_NV 1
+  lea %1, [rsp + 128 - CORO_NVBYTES]
+  sub rsp, CORO_NVBYTES
+  movaps [%1 - 128], xmm6
+  movaps [%1 - 112], xmm7
+  movaps [%1 -  96], xmm8
+  movaps [%1 -  80], xmm9
+  movaps [%1 -  64], xmm10
+  movaps [%1 -  48], xmm11
+  movaps [%1 -  32], xmm12
+  movaps [%1 -  16], xmm13
+  movaps [%1 +   0], xmm14
+  movaps [%1 +  16], xmm15
+  mov [%1 + 32], rbx
+  mov [%1 + 40], rsi
+  mov [%1 + 48], rdi
+  mov [%1 + 56], rbp
+  mov [%1 + 64], r12
+  mov [%1 + 72], r13
+  mov [%1 + 80], r14
+  mov [%1 + 88], r15
+%endmacro
+
+; Restore all non-volatile registers and adjust the stack.
+%macro RESTORE_NV 1
+  lea %1, [rsp + 128]
+  movaps xmm6,  [%1 - 128]
+  movaps xmm7,  [%1 - 112]
+  movaps xmm8,  [%1 -  96]
+  movaps xmm9,  [%1 -  80]
+  movaps xmm10, [%1 -  64]
+  movaps xmm11, [%1 -  48]
+  movaps xmm12, [%1 -  32]
+  movaps xmm13, [%1 -  16]
+  movaps xmm14, [%1 +   0]
+  movaps xmm15, [%1 +  16]
+  mov rbx, [%1 + 32]
+  mov rsi, [%1 + 40]
+  mov rdi, [%1 + 48]
+  mov rbp, [%1 + 56]
+  mov r12, [%1 + 64]
+  mov r13, [%1 + 72]
+  mov r14, [%1 + 80]
+  mov r15, [%1 + 88]
+  add rsp, CORO_NVBYTES
+%endmacro
+
+section .data
+
+; The pointer to the running coroutine.
+#ifndef CORO_THREADED
+coro_pointer dq 0
+#endif
+
+section .text
+
+; coro_start runs only on the first time the coroutine is resumed. It sets
+; rcx to the argument of coro_resume so that the coroutine gets it as its
+; first parameter.
+align 16
+coro_start:
+  ; Put coro_resume's argument into rcx
+  mov rcx, rax
+  ; Resume coroutine execution.
+  ret
+
+; coro_resume runs the coroutine until it yields or returns.
+align 16
+coro_resume_f32_f32:
+coro_resume_f32_f64:
+coro_resume_f32_i16:
+coro_resume_f32_i32:
+coro_resume_f32_i64:
+coro_resume_f32_i8:
+coro_resume_f32_p:
+coro_resume_f32_u16:
+coro_resume_f32_u32:
+coro_resume_f32_u64:
+coro_resume_f32_u8:
+coro_resume_f32_v:
+coro_resume_f64_f32:
+coro_resume_f64_f64:
+coro_resume_f64_i16:
+coro_resume_f64_i32:
+coro_resume_f64_i64:
+coro_resume_f64_i8:
+coro_resume_f64_p:
+coro_resume_f64_u16:
+coro_resume_f64_u32:
+coro_resume_f64_u64:
+coro_resume_f64_u8:
+coro_resume_f64_v:
+coro_resume_i16_f32:
+coro_resume_i16_f64:
+coro_resume_i16_i16:
+coro_resume_i16_i32:
+coro_resume_i16_i64:
+coro_resume_i16_i8:
+coro_resume_i16_p:
+coro_resume_i16_u16:
+coro_resume_i16_u32:
+coro_resume_i16_u64:
+coro_resume_i16_u8:
+coro_resume_i16_v:
+coro_resume_i32_f32:
+coro_resume_i32_f64:
+coro_resume_i32_i16:
+coro_resume_i32_i32:
+coro_resume_i32_i64:
+coro_resume_i32_i8:
+coro_resume_i32_p:
+coro_resume_i32_u16:
+coro_resume_i32_u32:
+coro_resume_i32_u64:
+coro_resume_i32_u8:
+coro_resume_i32_v:
+coro_resume_i64_f32:
+coro_resume_i64_f64:
+coro_resume_i64_i16:
+coro_resume_i64_i32:
+coro_resume_i64_i64:
+coro_resume_i64_i8:
+coro_resume_i64_p:
+coro_resume_i64_u16:
+coro_resume_i64_u32:
+coro_resume_i64_u64:
+coro_resume_i64_u8:
+coro_resume_i64_v:
+coro_resume_i8_f32:
+coro_resume_i8_f64:
+coro_resume_i8_i16:
+coro_resume_i8_i32:
+coro_resume_i8_i64:
+coro_resume_i8_i8:
+coro_resume_i8_p:
+coro_resume_i8_u16:
+coro_resume_i8_u32:
+coro_resume_i8_u64:
+coro_resume_i8_u8:
+coro_resume_i8_v:
+coro_resume_p_f32:
+coro_resume_p_f64:
+coro_resume_p_i16:
+coro_resume_p_i32:
+coro_resume_p_i64:
+coro_resume_p_i8:
+coro_resume_p_p:
+coro_resume_p_u16:
+coro_resume_p_u32:
+coro_resume_p_u64:
+coro_resume_p_u8:
+coro_resume_p_v:
+coro_resume_u16_f32:
+coro_resume_u16_f64:
+coro_resume_u16_i16:
+coro_resume_u16_i32:
+coro_resume_u16_i64:
+coro_resume_u16_i8:
+coro_resume_u16_p:
+coro_resume_u16_u16:
+coro_resume_u16_u32:
+coro_resume_u16_u64:
+coro_resume_u16_u8:
+coro_resume_u16_v:
+coro_resume_u32_f32:
+coro_resume_u32_f64:
+coro_resume_u32_i16:
+coro_resume_u32_i32:
+coro_resume_u32_i64:
+coro_resume_u32_i8:
+coro_resume_u32_p:
+coro_resume_u32_u16:
+coro_resume_u32_u32:
+coro_resume_u32_u64:
+coro_resume_u32_u8:
+coro_resume_u32_v:
+coro_resume_u64_f32:
+coro_resume_u64_f64:
+coro_resume_u64_i16:
+coro_resume_u64_i32:
+coro_resume_u64_i64:
+coro_resume_u64_i8:
+coro_resume_u64_p:
+coro_resume_u64_u16:
+coro_resume_u64_u32:
+coro_resume_u64_u64:
+coro_resume_u64_u8:
+coro_resume_u64_v:
+coro_resume_u8_f32:
+coro_resume_u8_f64:
+coro_resume_u8_i16:
+coro_resume_u8_i32:
+coro_resume_u8_i64:
+coro_resume_u8_i8:
+coro_resume_u8_p:
+coro_resume_u8_u16:
+coro_resume_u8_u32:
+coro_resume_u8_u64:
+coro_resume_u8_u8:
+coro_resume_u8_v:
+coro_resume_v_f32:
+coro_resume_v_f64:
+coro_resume_v_i16:
+coro_resume_v_i32:
+coro_resume_v_i64:
+coro_resume_v_i8:
+coro_resume_v_p:
+coro_resume_v_u16:
+coro_resume_v_u32:
+coro_resume_v_u64:
+coro_resume_v_u8:
+coro_resume_v_v:
+#ifdef CORO_DEBUG_STACK
+  ; Resume the coroutine.
+  push rcx
+  call coro_resume
+  pop rcx
+  
+  ; Check for stack underflow.
+  mov rdx, [rcx + OFFSET_RSP]
+  sub rdx, CORO_NVBYTES
+  mov r8, [rcx + OFFSET_STKBOT]
+  cmp rdx, r8
+  mov rdx, CORO_STACK_UNDERFLOW
+  jb corrupted
+  
+  ; Check for guard.
+  mov edx, dword [r8]
+  cmp edx, CORO_STACK_GUARD
+  mov rdx, CORO_GUARD_OVERWRITTEN
+  jne corrupted
+  
+  ; Stack is ok, return to the caller. The coroutine's return value is in rax
+  ; or xmm0, which we didn't touch here.
+  ret
+
+; This will be called on stack errors, the coroutine's pointer is in rcx and
+; the error code is in rdx.
+corrupted:
+  ; Save the coroutine's return value.
+  mov rsi, rax
+  movaps xmm6, xmm0
+  ; Call coro_stack_error, taking care of the calee's stack frame.
+  sub rsp, 40
+  call coro_stack_error
+  add rsp, 40
+  ; Restore the return value and return.
+  mov rax, rsi
+  movaps xmm0, xmm6
+  ret
+  
+coro_resume:
+#endif
+  ; Save all caller's non-volatiles registers.
+  SAVE_NV rax
+  
+#ifdef CORO_THREADED
+  ; Save the coroutine's pointer and the coro_resume's argument in
+  ; non-volatile registers.
+  mov rbx, rcx
+  mov rsi, rdx
+  movaps xmm6, xmm1
+  ; Get address of the pointer to the running coroutine.
+  sub rsp, 0x28
+  call coro_get_tls
+  add rsp, 0x28
+  ; Save the running coroutine's pointer.
+  mov [rax], rbx
+  ; Exchange the stacks.
+  xchg rsp, [rbx + OFFSET_RSP]
+  ; Restore the value of coro_resume's argument.
+  mov rax, rsi
+  movaps xmm0, xmm6
+#else
+  ; Get address of the pointer to the running coroutine.
+  mov rbx, coro_pointer
+  ; Save the running coroutine's pointer.
+  mov [rbx], rcx
+  ; Exchange the stacks.
+  xchg rsp, [rcx + OFFSET_RSP]
+  ; Restore the value of coro_resume's argument.
+  mov rax, rdx
+  movaps xmm0, xmm1
+#endif
+  
+  ; Restore all coroutine's non-volatile registers.
+  RESTORE_NV rcx
+  
+  ; Resume coroutine execution.
+  ret
+
+; coro_yield suspends the coroutine's execution and returns to the caller.
+align 16
+coro_yield_f32_f32:
+coro_yield_f32_f64:
+coro_yield_f32_i16:
+coro_yield_f32_i32:
+coro_yield_f32_i64:
+coro_yield_f32_i8:
+coro_yield_f32_p:
+coro_yield_f32_u16:
+coro_yield_f32_u32:
+coro_yield_f32_u64:
+coro_yield_f32_u8:
+coro_yield_f32_v:
+coro_yield_f64_f32:
+coro_yield_f64_f64:
+coro_yield_f64_i16:
+coro_yield_f64_i32:
+coro_yield_f64_i64:
+coro_yield_f64_i8:
+coro_yield_f64_p:
+coro_yield_f64_u16:
+coro_yield_f64_u32:
+coro_yield_f64_u64:
+coro_yield_f64_u8:
+coro_yield_f64_v:
+coro_yield_i16_f32:
+coro_yield_i16_f64:
+coro_yield_i16_i16:
+coro_yield_i16_i32:
+coro_yield_i16_i64:
+coro_yield_i16_i8:
+coro_yield_i16_p:
+coro_yield_i16_u16:
+coro_yield_i16_u32:
+coro_yield_i16_u64:
+coro_yield_i16_u8:
+coro_yield_i16_v:
+coro_yield_i32_f32:
+coro_yield_i32_f64:
+coro_yield_i32_i16:
+coro_yield_i32_i32:
+coro_yield_i32_i64:
+coro_yield_i32_i8:
+coro_yield_i32_p:
+coro_yield_i32_u16:
+coro_yield_i32_u32:
+coro_yield_i32_u64:
+coro_yield_i32_u8:
+coro_yield_i32_v:
+coro_yield_i64_f32:
+coro_yield_i64_f64:
+coro_yield_i64_i16:
+coro_yield_i64_i32:
+coro_yield_i64_i64:
+coro_yield_i64_i8:
+coro_yield_i64_p:
+coro_yield_i64_u16:
+coro_yield_i64_u32:
+coro_yield_i64_u64:
+coro_yield_i64_u8:
+coro_yield_i64_v:
+coro_yield_i8_f32:
+coro_yield_i8_f64:
+coro_yield_i8_i16:
+coro_yield_i8_i32:
+coro_yield_i8_i64:
+coro_yield_i8_i8:
+coro_yield_i8_p:
+coro_yield_i8_u16:
+coro_yield_i8_u32:
+coro_yield_i8_u64:
+coro_yield_i8_u8:
+coro_yield_i8_v:
+coro_yield_p_f32:
+coro_yield_p_f64:
+coro_yield_p_i16:
+coro_yield_p_i32:
+coro_yield_p_i64:
+coro_yield_p_i8:
+coro_yield_p_p:
+coro_yield_p_u16:
+coro_yield_p_u32:
+coro_yield_p_u64:
+coro_yield_p_u8:
+coro_yield_p_v:
+coro_yield_u16_f32:
+coro_yield_u16_f64:
+coro_yield_u16_i16:
+coro_yield_u16_i32:
+coro_yield_u16_i64:
+coro_yield_u16_i8:
+coro_yield_u16_p:
+coro_yield_u16_u16:
+coro_yield_u16_u32:
+coro_yield_u16_u64:
+coro_yield_u16_u8:
+coro_yield_u16_v:
+coro_yield_u32_f32:
+coro_yield_u32_f64:
+coro_yield_u32_i16:
+coro_yield_u32_i32:
+coro_yield_u32_i64:
+coro_yield_u32_i8:
+coro_yield_u32_p:
+coro_yield_u32_u16:
+coro_yield_u32_u32:
+coro_yield_u32_u64:
+coro_yield_u32_u8:
+coro_yield_u32_v:
+coro_yield_u64_f32:
+coro_yield_u64_f64:
+coro_yield_u64_i16:
+coro_yield_u64_i32:
+coro_yield_u64_i64:
+coro_yield_u64_i8:
+coro_yield_u64_p:
+coro_yield_u64_u16:
+coro_yield_u64_u32:
+coro_yield_u64_u64:
+coro_yield_u64_u8:
+coro_yield_u64_v:
+coro_yield_u8_f32:
+coro_yield_u8_f64:
+coro_yield_u8_i16:
+coro_yield_u8_i32:
+coro_yield_u8_i64:
+coro_yield_u8_i8:
+coro_yield_u8_p:
+coro_yield_u8_u16:
+coro_yield_u8_u32:
+coro_yield_u8_u64:
+coro_yield_u8_u8:
+coro_yield_u8_v:
+coro_yield_v_f32:
+coro_yield_v_f64:
+coro_yield_v_i16:
+coro_yield_v_i32:
+coro_yield_v_i64:
+coro_yield_v_i8:
+coro_yield_v_p:
+coro_yield_v_u16:
+coro_yield_v_u32:
+coro_yield_v_u64:
+coro_yield_v_u8:
+coro_yield_v_v:
+  ; Save all coroutine's non-volatiles registers.
+  SAVE_NV rax
+
+  ; revert the stack
+#ifdef CORO_THREADED
+  ; Save the coro_yield's argument in non-volatile registers.
+  mov rsi, rcx
+  movaps xmm6, xmm0
+  ; Get address of the pointer to the running coroutine.
+  sub rsp, 0x28
+  call coro_get_tls
+  add rsp, 0x28
+  ; Get the running coroutine's pointer.
+  mov rcx, [rax]
+  ; Exchange the stacks.
+  xchg rsp, [rcx + OFFSET_RSP]
+  ; Restore the value of coro_yields's argument.
+  mov rax, rsi
+  movaps xmm0, xmm6
+#else
+  mov rax, coro_pointer
+  mov rax, [rax]
+  xchg rsp, [rax + OFFSET_RSP]
+  mov rax, rcx
+#endif
+
+  ; Restore all caller's non-volatiles registers.
+  RESTORE_NV rcx
+  
+  ; Return from coro_yield.
+  ret
+
+; coro_suicide kills the coroutine (by making it CORO_DEAD) and returns from
+; coro_resume with its argument.
+align 16
+coro_suicide_f32:
+coro_suicide_f64:
+coro_suicide_i16:
+coro_suicide_i32:
+coro_suicide_i64:
+coro_suicide_i8:
+coro_suicide_p:
+coro_suicide_u16:
+coro_suicide_u32:
+coro_suicide_u64:
+coro_suicide_u8:
+coro_suicide_v:
+  ; Remove the return address from the stack.
+  add rsp, 8
+  ; Put the integer return value in the correct register. The fp return value
+  ; is already in xmm0.
+  mov rax, rcx
+  ; Kill the coroutine with a jump to coro_return.
+  jmp coro_return
+
+; coro_killed is called when a killed coroutine is resumed for the first time.
+align 16
+coro_killed:
+  ; Restore the parameters to coro_kill from the non-volatile registers.
+  movaps xmm0, xmm15
+  mov rax, rbx
+  ; Kill the coroutine with a jump to coro_return.
+  jmp coro_return
+
+; coro_dead makes dead coroutines return zero when resumed.
+align 16
+coro_dead:
+  ; Zero both the integer and the FP return values.
+  xor rax, rax
+  movq xmm0, rax
+  ; Kill the coroutine again.
+  jmp coro_return
+
+; coro_return is called when the coroutine ends via return.
+align 16
+coro_return:
+  ; Put the address where the coroutine wil be resumed to if coro_resume is
+  ; called again on it.
+  mov rcx, coro_dead
+  mov [rsp - 8], rcx
+  
+  ; Adjust rsp without saving non-volatile registers (in case the coroutine
+  ; is resumed again.)
+  sub rsp, CORO_NVBYTES + 8
+  
+  ; revert the stack
+#ifdef CORO_THREADED
+  ; Save the return value in non-volatile registers.
+  mov rsi, rax
+  movaps xmm6, xmm0
+  ; Get address of the pointer to the running coroutine.
+  sub rsp, 0x28
+  call coro_get_tls
+  add rsp, 0x28
+  ; Get the running coroutine's pointer.
+  mov rcx, [rax]
+  ; Exchange the stacks.
+  xchg rsp, [rcx + OFFSET_RSP]
+  ; Update the coroutine's status.
+  mov byte [rcx + OFFSET_STATE], CORO_DEAD
+  ; Restore the return value.
+  mov rax, rsi
+  movaps xmm0, xmm6
+#else
+  ; Get address of the pointer to the running coroutine.
+  mov rdx, coro_pointer
+  ; Get the running coroutine's pointer.
+  mov rcx, [rdx]
+  ; Exchange the stacks.
+  xchg rsp, [rcx + OFFSET_RSP]
+  ; Update the coroutine's status.
+  mov byte [rcx + OFFSET_STATE], CORO_DEAD
+#endif
+  
+  ; Restore all caller's non-volatiles registers.
+  RESTORE_NV rcx
+  
+  ; Return from the coroutine.
+  ret
+
+align 16
+coro_kill_f32:
+coro_kill_f64:
+coro_kill_i16:
+coro_kill_i32:
+coro_kill_i64:
+coro_kill_i8:
+coro_kill_p:
+coro_kill_u16:
+coro_kill_u32:
+coro_kill_u64:
+coro_kill_u8:
+coro_kill_v:
+  ; Get the coroutine's rsp.
+  mov rax, [rcx + OFFSET_RSP]
+  ; Killed coroutines will call coro_killed when resumed.
+  mov rcx, coro_killed
+  ; Save the FP argument in the non-volatile area.
+  movsd [rax + 16 + 128], xmm1
+  ; Save the integer argument in the non-volatile area.
+  mov [rax + 32 + 128], rdx
+  ; Overrite the coroutine's rip.
+  mov [rax + 104 + 128], rcx
+  ret
+  
+; coro_run_on_caller runs the given function in the callers stack.
+align 16
+coro_run_on_caller_f32:
+coro_run_on_caller_f64:
+coro_run_on_caller_i16:
+coro_run_on_caller_i32:
+coro_run_on_caller_i64:
+coro_run_on_caller_i8:
+coro_run_on_caller_p:
+coro_run_on_caller_u16:
+coro_run_on_caller_u32:
+coro_run_on_caller_u64:
+coro_run_on_caller_u8:
+coro_run_on_caller_v:
+#ifdef CORO_THREADED
+  ; Save the arguments onto the stack (in our home area.)
+  mov [rsp + 8], rcx
+  mov [rsp + 16], rdx
+  movaps [rsp + 24], xmm1
+  ; Get address of the pointer to the running coroutine.
+  sub rsp, 0x28
+  call coro_get_tls
+  add rsp, 0x28
+  ; Get the running coroutine's pointer.
+  mov r8, [rax]
+  ; Restore the arguments.
+  mov rax, [rsp + 8]
+  mov rcx, [rsp + 16]
+  mov xmm0, [rsp + 24]
+#else
+  ; Get address of the pointer to the running coroutine.
+  mov rax, coro_pointer
+  ; Get the running coroutine's pointer.
+  mov r8, [rax]
+  ; Set the arguments.
+  mov rax, rcx
+  mov rcx, rdx
+  movaps xmm0, xmm1
+#endif
+
+  ; Exchange the stacks.
+  xchg rsp, [r8 + OFFSET_RSP]
+  ; Call the function.
+  sub rsp, 0x28
+  call rax
+  add rsp, 0x28
+
+#ifdef CORO_THREADED
+  ; Get address of the pointer to the running coroutine.
+  sub rsp, 0x28
+  call coro_get_tls
+  add rsp, 0x28
+#else
+  ; Get address of the pointer to the running coroutine.
+  mov rax, coro_pointer
+#endif
+
+  ; Get the running coroutine's pointer.
+  mov rdx, [rax]
+  xchg rsp, [rdx + OFFSET_RSP]
+  ; Return.
+  ret
+
+align 16
+coro_chain_f32:
+coro_chain_f64:
+coro_chain_i16:
+coro_chain_i32:
+coro_chain_i64:
+coro_chain_i8:
+coro_chain_p:
+coro_chain_u16:
+coro_chain_u32:
+coro_chain_u64:
+coro_chain_u8:
+coro_chain_v:
+  ; Save all coroutine's non-volatiles registers.
+  SAVE_NV rax
+
+  ; revert the stack
+#ifdef CORO_THREADED
+  ; Save the coro_chain's argument in non-volatile registers.
+  mov rdi, rcx
+  mov rsi, rdx
+  movaps xmm6, xmm1
+  ; Get address of the pointer to the running coroutine.
+  sub rsp, 0x28
+  call coro_get_tls
+  add rsp, 0x28
+  ; Get the running coroutine's pointer.
+  mov rcx, [rax]
+  ; Set the new coroutine's pointer
+  mov [rax], rdi
+  ; Exchange the stacks.
+  xchg rsp, [rcx + OFFSET_RSP]
+  ; Restore the value of coro_chain's argument.
+  mov rcx, rdi
+  mov rax, rsi
+  movaps xmm0, xmm6
+#else
+  mov rax, coro_pointer
+  mov rdi, [rax]
+  mov [rax], rcx
+  xchg rsp, [rdi + OFFSET_RSP]
+  mov rax, rdx
+  movaps xmm0, xmm1
+#endif
+
+  ; Exchange the stacks.
+  xchg rsp, [rcx + OFFSET_RSP]
+  ; Restore all caller's non-volatiles registers.
+  RESTORE_NV rcx
+  ; Resume the coroutine.
+  ret

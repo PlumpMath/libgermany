@@ -1,0 +1,39 @@
+all: fatserver.exe fibonacci.exe oocounter.exe sched.exe
+
+fatserver.obj: fatserver.c
+	cl /nologo /O2 /I..\include /c /TC /Fo$@ fatserver.c
+
+fatserver.exe: fatserver.obj
+	link /nologo /OUT:$@ /SUBSYSTEM:console $** ..\src\win64\coro.lib
+
+fibonacci.obj: fibonacci.c
+	cl /nologo /O2 /I..\include /c /TC /Fo$@ fibonacci.c
+
+fibonacci.exe: fibonacci.obj
+	link /nologo /OUT:$@ /SUBSYSTEM:console $** ..\src\win64\coro.lib
+
+oocounter.obj: oocounter.cpp
+	cl /nologo /O2 /I..\include /I..\contrib /c /TP /Fo$@ oocounter.cpp
+
+Coroutine.obj: ..\contrib\Coroutine.cpp
+	cl /nologo /O2 /I..\include /I..\contrib /c /TP /Fo$@ ..\contrib\Coroutine.cpp
+
+oocounter.exe: oocounter.obj Coroutine.obj
+	link /nologo /OUT:$@ /SUBSYSTEM:console $** ..\src\win64\coro.lib
+
+sched.obj: sched.c
+	cl /nologo /O2 /I..\include /c /TC /Fo$@ sched.c
+
+sched.exe: sched.obj
+	link /nologo /OUT:$@ /SUBSYSTEM:console $** ..\src\win64\coro.lib
+
+clean:
+	del fatserver.obj
+	del fatserver.exe
+	del fibonacci.obj
+	del fibonacci.exe
+	del oocounter.obj
+	del Coroutine.obj
+	del oocounter.exe
+	del sched.obj
+	del sched.exe
